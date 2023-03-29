@@ -49,9 +49,9 @@ if os.path.exists(camera_parameters_L_file) or os.path.exists(camera_parameters_
     rms_R = np.array(params_dict_R['rms_R'])
     rvecs_R = np.array(params_dict_R['rvecs_R'])
     tvecs_R = np.array(params_dict_R['tvecs_R'])
+    print('INDIVIDUAL CAMERA CALIBRATION ----- Done!')
 else:
     print("No camera parameters found")
-print('INDIVIDUAL CAMERA CALIBRATION ----- Done!')
 
 if os.path.exists(stereo_parameters_file):
     with open(stereo_parameters_file, 'r') as file:
@@ -66,22 +66,22 @@ if os.path.exists(stereo_parameters_file):
     trans = np.array(stereo_dict['trans'])
     essentialMatirx = np.array(stereo_dict['essentialMatrix'])
     fundamentalMatrix = np.array(stereo_dict['fundamentalMatrix'])
-
+    print("Stereo Calibration ----- Done!")
 else:
     print("No stereo parameters found")
 
-    left_chosen_path, right_chosen_path = Checker_Board_functions.choose_stereo_pairs(images_left_sort,
+    left_chosen_path, right_chosen_path = AR_functions.choose_stereo_pairs(images_left_sort,
                                                                                       images_right_sort,
                                                                                       chessboardSize)
 
-    objpoints_L, imgpoints_L = Checker_Board_functions.calibrate_fine(left_chosen_path, chessboardSize)
+    objpoints_L, imgpoints_L = AR_functions.calibrate_fine(left_chosen_path, chessboardSize)
     cv.destroyAllWindows()
-    objpoints_R, imgpoints_R = Checker_Board_functions.calibrate_fine(right_chosen_path, chessboardSize)
+    objpoints_R, imgpoints_R = AR_functions.calibrate_fine(right_chosen_path, chessboardSize)
     cv.destroyAllWindows()
 
     retStereo, StereoCameraMatrixL, distL_stereo, StereoCameraMatrixR, \
         distR_stereo, rot, trans, essentialMatrix, fundamentalMatrix = \
-        Checker_Board_functions.stereo_calibrate(objpoints_L, imgpoints_L,imgpoints_R,
+        AR_functions.stereo_calibrate(objpoints_L, imgpoints_L,imgpoints_R,
                                              new_camera_matrix_L, dist_coeffs_L, new_camera_matrix_R, dist_coeffs_L,
                                              width, height)
 print('STEREO_CALIBRATION --- Done!')
@@ -105,7 +105,7 @@ if os.path.exists(stereo_map_file):
 else:
     print("No stereo map found")
     stereoMapL_x, stereoMapL_y, stereoMapR_x, stereoMapR_y = \
-        Checker_Board_functions.rectify_undistort(StereoCameraMatrixL,distL_stereo,
+        AR_functions.rectify_undistort(StereoCameraMatrixL,distL_stereo,
                                                   StereoCameraMatrixR, distR_stereo,img_size_w_h, rot, trans)
 
     img_left = cv.imread(images_left_sort[0])

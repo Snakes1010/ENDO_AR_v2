@@ -2,8 +2,8 @@ import yaml
 import os
 import numpy as np
 
-camera_parameters_L_file ='calib_300_L.yaml'
-camera_parameters_R_file ='calib_300_R.yaml'
+camera_parameters_L_file ='calib_100_L.yaml'
+camera_parameters_R_file ='calib_100_R.yaml'
 
 if os.path.exists(camera_parameters_L_file) or os.path.exists(camera_parameters_R_file):
     with open(camera_parameters_L_file, 'r') as file:
@@ -75,6 +75,6 @@ new_fx_mm_R = new_fx_pixels_R * effective_pixel_width
 new_fy_mm_R = new_fy_pixels_R * effective_pixel_height
 
 print("Left camera focal lengths (fx_mm, fy_mm):", fx_mm_L, fy_mm_L)
-print("Left camera new focal lengths (new_fx_mm, new_fy_mm):", new_fx_mm_L, new_fy_mm_L)
 print("Right camera focal lengths (fx_mm, fy_mm):", fx_mm_R, fy_mm_R)
+print("Left camera new focal lengths (new_fx_mm, new_fy_mm):", new_fx_mm_L, new_fy_mm_L)
 print("Right camera new focal lengths (new_fx_mm, new_fy_mm):", new_fx_mm_R, new_fy_mm_R)

@@ -85,6 +85,8 @@ def choose_stereo_pairs(images_L, images_R, chessboardSize):
         retR, cornersR = cv.findChessboardCorners(grayR, chessboardSize, None, flags=cv.CALIB_CB_FAST_CHECK)
 
         if retL and retR == True:
+            cornersL = cornersL[::-1]
+            cornersR = cornersR[::-1]
             cv.drawChessboardCorners(img_l, chessboardSize, cornersL, retL)
             cv.drawChessboardCorners(img_r, chessboardSize, cornersR, retR)
             draw_first_point(img_l, cornersL)

@@ -102,7 +102,7 @@ print('imgpointL\n', imgpointsL)
 print('objpoints\n', objpoints)
 
 ############# CALIBRATION #######################################################
-imageSize Size of the image used only to initialize the intrinsic camera matrix [w,h].
+#imageSize Size of the image used only to initialize the intrinsic camera matrix [w,h].
 ret, cameraMatrix_L, dist_L, rvecs_L, tvecs_L = cv.calibrateCamera(objpoint_s, imgpoints_L, (width, height), None, None)
 newCameraMatrix, roi = cv.getOptimalNewCameraMatrix(cameraMatrix, dist, (width,height), 1, (width,height))
 
