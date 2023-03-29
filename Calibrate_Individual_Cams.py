@@ -19,8 +19,8 @@ chessboardSize = (10,7)
 # if not os.path.exists(dir_name):
 #     os.makedirs(dir_name)
 # grab extracted frames from a folder and add it to a list and sort it
-camera_parameters_L_file ='calib_100_L.yaml'
-camera_parameters_R_file ='calib_100_R.yaml'
+camera_parameters_L_file ='calib_50_L.yaml'
+camera_parameters_R_file ='calib_50_R.yaml'
 
 play(sound_search_CB)
 images_left = glob.glob('/Users/jacobsimon/Desktop/ENDO_AR/data_2_3_23/frameL/*')
@@ -50,8 +50,8 @@ success = False
 while success == False:
     print('STARTING CAMERA CALIBRATION')
     play(sound_start_calibration)
-    random_imgpoints_L, random_objpoints_L = AR.random_imgs_from_lst(imgpoints_L, objpoints_L, 100)
-    random_imgpoints_R, random_objpoints_R = AR.random_imgs_from_lst(imgpoints_R, objpoints_R, 100)
+    random_imgpoints_L, random_objpoints_L = AR.random_imgs_from_lst(imgpoints_L, objpoints_L, 500)
+    random_imgpoints_R, random_objpoints_R = AR.random_imgs_from_lst(imgpoints_R, objpoints_R, 500)
     print('CB L detection #:', len(imgpoints_L))
     print('CB R detection #:', len(imgpoints_R))
     print(len(random_imgpoints_L))
@@ -70,6 +70,25 @@ while success == False:
     print("New Camera Matrix R:")
     print(f"- fx: {fx_R}")
     print(f"- fy: {fy_R}")
+
+    print("Left camera RMS:", rms_L)
+    print("Left camera matrix:\n", camera_matrix_L)
+    print("Left camera distortion coefficients:\n", dist_L)
+    print("Left camera rotation vectors:\n", rvecs_L)
+    print("Left camera translation vectors:\n", tvecs_L)
+
+    print("New left camera matrix:\n", newCameraMatrix_L)
+    print("ROI for left camera:", roi_L)
+
+    print("Right camera RMS:", rms_R)
+    print("Right camera matrix:\n", camera_matrix_R)
+    print("Right camera distortion coefficients:\n", dist_R)
+    print("Right camera rotation vectors:\n", rvecs_R)
+    print("Right camera translation vectors:\n", tvecs_R)
+
+    print("New right camera matrix:\n", newCameraMatrix_R)
+    print("ROI for right camera:", roi_R)
+
     tolerance = 2000
     if abs(fx_L - fx_R) < tolerance and abs(fy_L - fy_R) < tolerance:
         print('CALIBRATION SUCCESSFUL')

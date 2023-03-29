@@ -160,9 +160,9 @@ def rectify_undistort(StereoCameraMatrixL,distL_stereo, StereoCameraMatrixR, dis
         StereoCameraMatrixL,distL_stereo, StereoCameraMatrixR, distR_stereo, img_size_w_h, rot, trans, flags, alpha)
 
     stereoMapL_x, stereoMapL_y = cv.initUndistortRectifyMap(StereoCameraMatrixL, distL_stereo, rectL_stereo, projMatrixL,
-                                            img_size_w_h, cv.CV_32FC1)
+                                            img_size_w_h, cv.CV_32FC2)
     stereoMapR_x, stereoMapR_y = cv.initUndistortRectifyMap(StereoCameraMatrixR, distR_stereo, rectR_stereo, projMatrixR,
-                                            img_size_w_h, cv.CV_32FC1)
+                                            img_size_w_h, cv.CV_32FC2)
 
     print("Saving parameters!")
     cv_file = cv.FileStorage('stereo_map.xml', cv.FILE_STORAGE_WRITE)
