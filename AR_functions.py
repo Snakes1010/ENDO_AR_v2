@@ -165,7 +165,7 @@ def rectify_undistort(StereoCameraMatrixL,distL_stereo, StereoCameraMatrixR, dis
                                             img_size_w_h, cv.CV_32FC2)
 
     print("Saving parameters!")
-    cv_file = cv.FileStorage('stereo_map.xml', cv.FILE_STORAGE_WRITE)
+    cv_file = cv.FileStorage('stereo_map_nico.xml', cv.FILE_STORAGE_WRITE)
     cv_file.write('stereoMapL_x', stereoMapL_x)
     cv_file.write('stereoMapL_y', stereoMapL_y)
     cv_file.write('stereoMapR_x', stereoMapR_x)
