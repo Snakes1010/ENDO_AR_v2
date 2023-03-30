@@ -11,12 +11,12 @@ chessboardSize = (10,7)
 # if not os.path.exists(dir_name):
 #     os.makedirs(dir_name)q
 # grab extracted frames from a folder and add it to a list and sort it
-camera_parameters_L_file ='calib_100_L.yaml'
-camera_parameters_R_file ='calib_100_R.yaml'
+camera_parameters_L_file ='calib_50_L_K.yaml'
+camera_parameters_R_file ='calib_50_R_K.yaml'
 stereo_parameters_file ='stereo_calib_params.yml'
 stereo_map_file = ''
-images_left = glob.glob('/Users/jacobsimon/Desktop/ENDO_AR/data_2_3_23/frameL/*')
-images_right = glob.glob('/Users/jacobsimon/Desktop/ENDO_AR/data_2_3_23/frameR/*')
+images_left = glob.glob('/Users/jcsimon/Desktop/ENDO_AR/data_2_3_23/frameL/*')
+images_right = glob.glob('/Users/jcsimon/Desktop/ENDO_AR/data_2_3_23/frameR/*')
 images_left_sort = sorted(images_left)
 images_right_sort = sorted(images_right)
 dimensions = cv.imread(images_left_sort[0])

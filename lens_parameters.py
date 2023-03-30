@@ -2,8 +2,8 @@ import yaml
 import os
 import numpy as np
 
-camera_parameters_L_file ='calib_100_L.yaml'
-camera_parameters_R_file ='calib_100_R.yaml'
+camera_parameters_L_file ='calib_50_L_K.yaml'
+camera_parameters_R_file ='calib_50_R_K.yaml'
 
 if os.path.exists(camera_parameters_L_file) or os.path.exists(camera_parameters_R_file):
     with open(camera_parameters_L_file, 'r') as file:
