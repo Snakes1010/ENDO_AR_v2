@@ -24,8 +24,8 @@ objpoints = [] # 3d point in real world space
 imgpointsL = [] # 2d points in image plane.
 imgpointsR = [] # 2d points in image plane.
 
-imgL = cv.imread('/Users/jcsimon/Desktop/ENDO_AR/data_2_3_23/frameL/frameL0.jpg')
-imgR = cv.imread('/Users/jcsimon/Desktop/ENDO_AR/data_2_3_23/frameR/frameR0.jpg')
+imgL = cv.imread('/Users/jcsimon/Desktop/ENDO_AR/mantis_1mm_8x11/frameL/frame0000.jpg')
+imgR = cv.imread('/Users/jcsimon/Desktop/ENDO_AR/mantis_1mm_8x11/frameR/frame0000.jpg')
 
 # function to display the coordinates of
 # of the points clicked on the image

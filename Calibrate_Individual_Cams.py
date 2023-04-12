@@ -17,12 +17,12 @@ chessboardSize = (10,7)
 # if not os.path.exists(dir_name):
 #     os.makedirs(dir_name)
 # grab extracted frames from a folder and add it to a list and sort it
-camera_parameters_L_file ='calib_50_L_K.yaml'
-camera_parameters_R_file ='calib_50_R_K.yaml'
+camera_parameters_L_file ='calib_300_L.yaml'
+camera_parameters_R_file ='calib_300_R.yaml'
 
 # play(sound_search_CB)
-images_left = glob.glob('/Users/jcsimon/Desktop/ENDO_AR/data_2_3_23/frameL/*')
-images_right = glob.glob('/Users/jcsimon/Desktop/ENDO_AR/data_2_3_23/frameR/*')
+images_left = glob.glob('/Users/jcsimon/Desktop/ENDO_AR/mantis_more_angles/frameL/*')
+images_right = glob.glob('/Users/jcsimon/Desktop/ENDO_AR/mantis_more_angles/frameR/*')
 images_left_sort = sorted(images_left)
 images_right_sort = sorted(images_right)
 dimensions = cv.imread(images_left_sort[0])
@@ -33,13 +33,13 @@ width = dimensions[1]
 height = dimensions[0]
 print('width:', width)
 print('height', height)
-fx = 30405.405405405403
-fy = 28918.918918918916
-cx = 960
-cy = 540
-K = np.array([[fx, 0, cx],
-              [0, fy, cy],
-              [0, 0, 1]])
+# fx = 30405.405405405403
+# fy = 28918.918918918916
+# cx = 960
+# cy = 540
+# K = np.array([[fx, 0, cx],
+#               [0, fy, cy],
+#               [0, 0, 1]])
 ################################################################
 
 objpoints_L, imgpoints_L = AR.calibrate_fine(images_left_sort, chessboardSize)
@@ -54,26 +54,20 @@ success = False
 while success == False:
     print('STARTING CAMERA CALIBRATION')
     # play(sound_start_calibration)
-    random_imgpoints_L, random_objpoints_L = AR.random_imgs_from_lst(imgpoints_L, objpoints_L, 100)
-    random_imgpoints_R, random_objpoints_R = AR.random_imgs_from_lst(imgpoints_R, objpoints_R, 100)
+    random_imgpoints_L, random_objpoints_L = AR.random_imgs_from_lst(imgpoints_L, objpoints_L, 300)
+    random_imgpoints_R, random_objpoints_R = AR.random_imgs_from_lst(imgpoints_R, objpoints_R, 300)
     print('CB L detection #:', len(imgpoints_L))
     print('CB R detection #:', len(imgpoints_R))
     print(len(random_imgpoints_L))
     print(len(random_imgpoints_R))
-    rms_L, camera_matrix_L, dist_L, rvecs_L, tvecs_L = cv.calibrateCamera(random_objpoints_L, random_imgpoints_L, (width, height), K, None, flags=cv.CALIB_USE_LU)
+    rms_L, camera_matrix_L, dist_L, rvecs_L, tvecs_L = cv.calibrateCamera(random_objpoints_L, random_imgpoints_L, (width, height), None, None)
     newCameraMatrix_L, roi_L = cv.getOptimalNewCameraMatrix(camera_matrix_L, dist_L, (width,height), 1)
-    rms_R, camera_matrix_R, dist_R, rvecs_R, tvecs_R = cv.calibrateCamera(random_objpoints_R, random_imgpoints_R, (width, height), K, None, flags=cv.CALIB_USE_LU)
+    rms_R, camera_matrix_R, dist_R, rvecs_R, tvecs_R = cv.calibrateCamera(random_objpoints_R, random_imgpoints_R, (width, height), None, None)
     newCameraMatrix_R, roi_R = cv.getOptimalNewCameraMatrix(camera_matrix_R, dist_R, (width, height), 1)
     fx_L = newCameraMatrix_L[0, 0]
     fy_L = newCameraMatrix_L[1, 1]
     fx_R = newCameraMatrix_R[0, 0]
     fy_R = newCameraMatrix_R[1, 1]
-    print("New Camera Matrix L:")
-    print(f"- fx: {fx_L}")
-    print(f"- fy: {fy_L}")
-    print("New Camera Matrix R:")
-    print(f"- fx: {fx_R}")
-    print(f"- fy: {fy_R}")
 
     print("Left camera RMS:", rms_L)
     print("Left camera matrix:\n", camera_matrix_L)
@@ -81,15 +75,14 @@ while success == False:
     print("Left camera rotation vectors:\n", rvecs_L)
     print("Left camera translation vectors:\n", tvecs_L)
 
-    print("New left camera matrix:\n", newCameraMatrix_L)
-    print("ROI for left camera:", roi_L)
-
     print("Right camera RMS:", rms_R)
     print("Right camera matrix:\n", camera_matrix_R)
     print("Right camera distortion coefficients:\n", dist_R)
     print("Right camera rotation vectors:\n", rvecs_R)
     print("Right camera translation vectors:\n", tvecs_R)
 
+    print("New left camera matrix:\n", newCameraMatrix_L)
+    print("ROI for left camera:", roi_L)
     print("New right camera matrix:\n", newCameraMatrix_R)
     print("ROI for right camera:", roi_R)
 

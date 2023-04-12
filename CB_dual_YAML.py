@@ -16,10 +16,18 @@ camera_parameters_R_file ='calib_chosen_R.yaml'
 stereo_parameters_file ='stereo_calib_params.yml'
 stereo_map_file = 'map_calib'
 
-images_left = glob.glob('/Users/jcsimon/Desktop/ENDO_AR/data_2_3_23/frameL/*')
-images_right = glob.glob('/Users/jcsimon/Desktop/ENDO_AR/data_2_3_23/frameR/*')
-images_left_sort = sorted(images_left)
-images_right_sort = sorted(images_right)
+left_chosen_path = AR_functions.import_yaml()
+with open('left_chosen_path_2mm.yaml', 'r') as file:
+    left_chosen_path = yaml.load(file, Loader=yaml.FullLoader)
+    print("Left chosen paths:", left_chosen_path)
+with open('right_chosen_path_2mm.yaml', 'r') as file:
+    right_chosen_path = yaml.load(file, Loader=yaml.FullLoader)
+    print("Right chosen paths:", right_chosen_path)
+''
+images_left_sort = sorted(left_chosen_path)
+images_right_sort = sorted(right_chosen_path)
+
+
 
 dimensions = cv.imread(images_left_sort[0])
 dimensions = dimensions.shape
@@ -71,15 +79,17 @@ if os.path.exists(stereo_parameters_file):
     print("Stereo Calibration ----- Done!")
 else:
     print("No stereo parameters found")
-
-    left_chosen_path, right_chosen_path = AR_functions.choose_stereo_pairs(images_left_sort,
-                                                                                      images_right_sort,
-                                                                                      chessboardSize)
-
-    objpoints_L, imgpoints_L = AR_functions.calibrate_fine(left_chosen_path, chessboardSize)
+    print(len(images_left_sort))
+    print(len(images_right_sort))
+    objpoints_L, imgpoints_L = AR_functions.calibrate_fine(images_left_sort, chessboardSize)
     cv.destroyAllWindows()
-    objpoints_R, imgpoints_R = AR_functions.calibrate_fine(right_chosen_path, chessboardSize)
+    objpoints_R, imgpoints_R = AR_functions.calibrate_fine(images_right_sort, chessboardSize)
     cv.destroyAllWindows()
+
+    print(len(objpoints_L))
+    print(len(imgpoints_L))
+    print(len(objpoints_R))
+    print(len(imgpoints_R))
 
     retStereo, StereoCameraMatrixL, distL_stereo, StereoCameraMatrixR, \
         distR_stereo, rot, trans, essentialMatrix, fundamentalMatrix = \

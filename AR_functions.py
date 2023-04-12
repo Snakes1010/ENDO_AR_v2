@@ -28,13 +28,14 @@ def calibrate_fine(images, chessboardSize):
         gray_img = cv.cvtColor(img, cv.COLOR_BGR2GRAY)
         ret, corners = cv.findChessboardCornersSB(gray_img, chessboardSize, flags= None)
         if ret == True:
-            # corners = corners[::-1]
+            corners = orientation(corners)
             objpoints.append(objp)
             imgpoints.append(corners)
             cv.drawChessboardCorners(img, chessboardSize, corners, ret)
             cv.putText(img, str(imgloop), (50, 100), cv.FONT_HERSHEY_SIMPLEX, 1, (0, 0, 255), 2)
             draw_first_point(img, corners)
             draw_last_point(img, corners)
+            # draw_second_point(img, corners, objp)
             cv.imshow('img ' + os.path.basename(images[0]), img)
             key = cv.waitKey(1) & 0xFF
             if key == ord('q'):
@@ -81,12 +82,12 @@ def choose_stereo_pairs(images_L, images_R, chessboardSize):
         grayL = cv.cvtColor(img_l, cv.COLOR_BGR2GRAY)
         grayR = cv.cvtColor(img_r, cv.COLOR_BGR2GRAY)
 
-        retL, cornersL = cv.findChessboardCorners(grayL, chessboardSize, None, flags=cv.CALIB_CB_FAST_CHECK)
-        retR, cornersR = cv.findChessboardCorners(grayR, chessboardSize, None, flags=cv.CALIB_CB_FAST_CHECK)
+        retL, cornersL = cv.findChessboardCornersSB(grayL, chessboardSize, flags= None)
+        retR, cornersR = cv.findChessboardCornersSB(grayR, chessboardSize, flags= None)
 
         if retL and retR == True:
-            cornersL = cornersL[::-1]
-            cornersR = cornersR[::-1]
+            cornersL = orientation(cornersL)
+            cornersR = orientation(cornersR)
             cv.drawChessboardCorners(img_l, chessboardSize, cornersL, retL)
             cv.drawChessboardCorners(img_r, chessboardSize, cornersR, retR)
             draw_first_point(img_l, cornersL)
@@ -165,7 +166,7 @@ def rectify_undistort(StereoCameraMatrixL,distL_stereo, StereoCameraMatrixR, dis
                                             img_size_w_h, cv.CV_32FC2)
 
     print("Saving parameters!")
-    cv_file = cv.FileStorage('stereo_map_nico.xml', cv.FILE_STORAGE_WRITE)
+    cv_file = cv.FileStorage('stereo_map.xml', cv.FILE_STORAGE_WRITE)
     cv_file.write('stereoMapL_x', stereoMapL_x)
     cv_file.write('stereoMapL_y', stereoMapL_y)
     cv_file.write('stereoMapR_x', stereoMapR_x)
@@ -237,3 +238,23 @@ def calibrate_fast(images, chessboardSize):
 
     print(f"Total processing time: {total_time:.4f} seconds")
     return objpoints, imgpoints
+
+def orientation(corners):
+        first_point = tuple(corners[0][0].astype(int))
+        last_point = tuple(corners[-1][-1].astype(int))
+        if first_point[0] > last_point[0]:
+            corners = corners[::-1]
+            return corners
+        else:
+            return corners
+
+################################################################
+def import_yaml(file_name):
+    with open(file_name, 'r') as file:
+        data = yaml.safe_load(file)
+    return data
+
+################################################################
+def export_yaml(file_name, data):
+    with open(file_name, 'w') as file:
+        yaml.dump(data, file)
