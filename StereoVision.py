@@ -4,21 +4,21 @@ import numpy as np
 import time
 from matplotlib import pyplot as plt
 
-# Camera parameters to undistort and rectify images
-cv_file = cv.FileStorage()
-cv_file.open('stereoMap3.xml', cv.FileStorage_READ)
+def read_calib_unprojection_map(file_path_base):
+    stereoMapL_x = cv.imread(file_path_base + "camera_0_mapX.exr", cv.IMREAD_UNCHANGED)
+    stereoMapL_y = cv.imread(file_path_base + "camera_0_mapY.exr", cv.IMREAD_UNCHANGED)
+    stereoMapR_x = cv.imread(file_path_base + "camera_1_mapX.exr", cv.IMREAD_UNCHANGED)
+    stereoMapR_y = cv.imread(file_path_base + "camera_1_mapY.exr", cv.IMREAD_UNCHANGED)
+    return stereoMapL_x, stereoMapL_y, stereoMapR_x, stereoMapR_y
 
-stereoMapL_x = cv_file.getNode('stereoMapL_x').mat()
-stereoMapL_y = cv_file.getNode('stereoMapL_y').mat()
-stereoMapR_x = cv_file.getNode('stereoMapR_x').mat()
-stereoMapR_y = cv_file.getNode('stereoMapR_y').mat()
+stereoMapL_x, stereoMapL_y, stereoMapR_x, stereoMapR_y = read_calib_unprojection_map('/home/jacob/endo_calib/ENDO_AR/')
 
 
 # Open both cameras
 # cap_left = cv.VideoCapture('SHGN7_S001_S001_T012_ISO1.MOV')
 # cap_right = cv.VideoCapture('SHGN7_S001_S001_T012_ISO2.MOV')
-cap_left = cv.VideoCapture('SHGN7_S001_S001_T015_ISO1.MOV')
-cap_right = cv.VideoCapture('SHGN7_S001_S001_T015_ISO2.MOV')
+cap_left = cv.VideoCapture('/home/jacob/endo_calib/ENDO_AR/mantis_more_angles/SHGN7_S001_S001_T005_ISO1.MOV')
+cap_right = cv.VideoCapture('/home/jacob/endo_calib/ENDO_AR/mantis_more_angles/SHGN7_S001_S001_T005_ISO2.MOV')
 
 Scalefactor = 1
 frameSize = (int(1920/Scalefactor), int(1080/Scalefactor))
