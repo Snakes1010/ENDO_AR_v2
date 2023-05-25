@@ -5,6 +5,7 @@ import random
 import time
 import yaml
 import glob
+import json
 
 # for an individual camera, get the fast checkerboards and but the
 # objpoints and imgpoints into lists
@@ -258,3 +259,51 @@ def import_yaml(file_name):
 def export_yaml(file_name, data):
     with open(file_name, 'w') as file:
         yaml.dump(data, file)
+
+################################################################
+def readCalibParameters(filePath):
+    with open(filePath) as file:
+        jsonStruct = json.load(file)
+
+    assert jsonStruct["Calibration"]["cameras"][0]["model"]["polymorphic_name"] == "libCalib::CameraModelOpenCV"
+
+    nCameras = len(jsonStruct["Calibration"]["cameras"])
+    if nCameras < 1:
+        return False
+
+    K = []
+    k = []
+    cam_rvecs = []
+    cam_tvecs = []
+
+    for i in range(nCameras):
+        intrinsics = jsonStruct["Calibration"]["cameras"][i]["model"]["ptr_wrapper"]["data"]["parameters"]
+        f = intrinsics["f"]["val"]
+        ar = intrinsics["ar"]["val"]
+        cx = intrinsics["cx"]["val"]
+        cy = intrinsics["cy"]["val"]
+        k1 = intrinsics["k1"]["val"]
+        k2 = intrinsics["k2"]["val"]
+        k3 = intrinsics["k3"]["val"]
+        k4 = intrinsics["k4"]["val"]
+        k5 = intrinsics["k5"]["val"]
+        k6 = intrinsics["k6"]["val"]
+        p1 = intrinsics["p1"]["val"]
+        p2 = intrinsics["p2"]["val"]
+        s1 = intrinsics["s1"]["val"]
+        s2 = intrinsics["s2"]["val"]
+        s3 = intrinsics["s3"]["val"]
+        s4 = intrinsics["s4"]["val"]
+        tauX = intrinsics["tauX"]["val"]
+        tauY = intrinsics["tauY"]["val"]
+
+        K.append(np.array([[f, 0.0, cx], [0.0, f * ar, cy], [0.0, 0.0, 1.0]], dtype=np.float64))
+        k.append(np.array([k1, k2, p1, p2, k3, k4, k5, k6, s1, s2, s3, s4, tauX, tauY], dtype=np.float64))
+
+        transform = jsonStruct["Calibration"]["cameras"][i]["transform"]
+        rot = transform["rotation"]
+        cam_rvecs.append(np.array([rot["rx"], rot["ry"], rot["rz"]], dtype=np.float64))
+        t = transform["translation"]
+        cam_tvecs.append(np.array([t["x"], t["y"], t["z"]], dtype=np.float64))
+
+    return K, k, cam_rvecs, cam_tvecs

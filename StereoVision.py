@@ -1,17 +1,17 @@
 import sys
 import cv2 as cv
+import pyexr
 import numpy as np
 import time
 from matplotlib import pyplot as plt
 
-def read_calib_unprojection_map(file_path_base):
-    stereoMapL_x = cv.imread(file_path_base + "camera_0_mapX.exr", cv.IMREAD_UNCHANGED)
-    stereoMapL_y = cv.imread(file_path_base + "camera_0_mapY.exr", cv.IMREAD_UNCHANGED)
-    stereoMapR_x = cv.imread(file_path_base + "camera_1_mapX.exr", cv.IMREAD_UNCHANGED)
-    stereoMapR_y = cv.imread(file_path_base + "camera_1_mapY.exr", cv.IMREAD_UNCHANGED)
-    return stereoMapL_x, stereoMapL_y, stereoMapR_x, stereoMapR_y
+cv_file = cv.FileStorage()
+cv_file.open('stereoMap5_12.xml', cv.FileStorage_READ)
 
-stereoMapL_x, stereoMapL_y, stereoMapR_x, stereoMapR_y = read_calib_unprojection_map('/home/jacob/endo_calib/ENDO_AR/')
+stereoMapL_x = cv_file.getNode('stereoMapL_x').mat()
+stereoMapL_y = cv_file.getNode('stereoMapL_y').mat()
+stereoMapR_x = cv_file.getNode('stereoMapR_x').mat()
+stereoMapR_y = cv_file.getNode('stereoMapR_y').mat()
 
 
 # Open both cameras
@@ -20,23 +20,19 @@ stereoMapL_x, stereoMapL_y, stereoMapR_x, stereoMapR_y = read_calib_unprojection
 cap_left = cv.VideoCapture('/home/jacob/endo_calib/ENDO_AR/mantis_more_angles/SHGN7_S001_S001_T005_ISO1.MOV')
 cap_right = cv.VideoCapture('/home/jacob/endo_calib/ENDO_AR/mantis_more_angles/SHGN7_S001_S001_T005_ISO2.MOV')
 
-Scalefactor = 1
-frameSize = (int(1920/Scalefactor), int(1080/Scalefactor))
+
 
 while(cap_left.isOpened() and cap_right.isOpened()):
         # load color raw image(1080 rows, 1920 columns)
         succes_left, frame_left_col = cap_left.read()
         succes_right, frame_right_col = cap_right.read()
 
-        #down size images by scale factor
-        frame_left_col = cv.resize(frame_left_col, frameSize)
-        frame_right_col = cv.resize(frame_right_col, frameSize)
         # convert color to gray scale
         frame_left_gray = cv.cvtColor(frame_left_col, cv.COLOR_BGR2GRAY)
         frame_right_gray = cv.cvtColor(frame_right_col, cv.COLOR_BGR2GRAY)
         # # remap function on gray images
-        frame_left_gray_remap = cv.remap(frame_left_col, stereoMapL_x, stereoMapL_y, cv.INTER_LANCZOS4, cv.BORDER_CONSTANT, 0)
-        frame_right_gray_remap = cv.remap(frame_right_col, stereoMapR_x, stereoMapR_y, cv.INTER_LANCZOS4, cv.BORDER_CONSTANT, 0)
+        frame_left_gray_remap = cv.remap(frame_left_col, stereoMapL_x, stereoMapL_y, cv.INTER_LINEAR)
+        frame_right_gray_remap = cv.remap(frame_right_col, stereoMapR_x, stereoMapR_y, cv.INTER_LINEAR)
 
 
         cv.imshow('left',frame_left_gray_remap)

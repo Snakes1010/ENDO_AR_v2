@@ -3,10 +3,6 @@ import glob
 import os
 import numpy as np
 
-# identify the location of where we want to save the quality frames
-dir_name = ""
-camera_parameters_L_file ='calib_100_L3.yaml'
-camera_parameters_R_file ='calib_100_R3.yaml'
 
 ################ FIND CHESSBOARD CORNERS - OBJECT POINTS AND IMAGE POINTS #############################
 # chessboardSize = (row, col)

@@ -11,8 +11,8 @@ chessboardSize = (10,7)
 # if not os.path.exists(dir_name):
 #     os.makedirs(dir_name)q
 # grab extracted frames from a folder and add it to a list and sort it
-images_left = glob.glob('/home/jacob/endo_calib/ENDO_AR/mantis_more_angles/frameL/*')
-images_right = glob.glob('/home/jacob/endo_calib/ENDO_AR/mantis_more_angles/frameR/*')
+images_left = glob.glob('/home/jacob/endo_calib/ENDO_AR/mantis_2mm_8x11/frameL/*')
+images_right = glob.glob('/home/jacob/endo_calib/ENDO_AR/mantis_2mm_8x11/frameR/*')
 images_left_sort = sorted(images_left)
 images_right_sort = sorted(images_right)
 dimensions = cv.imread(images_left_sort[0])
@@ -25,8 +25,8 @@ print('width:', width)
 print('height', height)
 img_size_w_h = (width, height)
 
-file_name_L = 'more_angles_L.yaml'
-file_name_R = 'more_angles_R.yaml'
+file_name_L = '2mm_L.yaml'
+file_name_R = '2mm_R.yaml'
 
 left_chosen_path, right_chosen_path = AR_functions.choose_stereo_pairs(images_left_sort,
                                                                                   images_right_sort,
