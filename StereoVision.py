@@ -6,7 +6,7 @@ import time
 from matplotlib import pyplot as plt
 
 cv_file = cv.FileStorage()
-cv_file.open('stereoMap5_12.xml', cv.FileStorage_READ)
+cv_file.open('stereoMap5_26.xml', cv.FileStorage_READ)
 
 stereoMapL_x = cv_file.getNode('stereoMapL_x').mat()
 stereoMapL_y = cv_file.getNode('stereoMapL_y').mat()
@@ -17,8 +17,8 @@ stereoMapR_y = cv_file.getNode('stereoMapR_y').mat()
 # Open both cameras
 # cap_left = cv.VideoCapture('SHGN7_S001_S001_T012_ISO1.MOV')
 # cap_right = cv.VideoCapture('SHGN7_S001_S001_T012_ISO2.MOV')
-cap_left = cv.VideoCapture('/home/jacob/endo_calib/ENDO_AR/mantis_more_angles/SHGN7_S001_S001_T005_ISO1.MOV')
-cap_right = cv.VideoCapture('/home/jacob/endo_calib/ENDO_AR/mantis_more_angles/SHGN7_S001_S001_T005_ISO2.MOV')
+cap_left = cv.VideoCapture('/home/jacob/endo_calib/camera_calibration_5_26/8_11_5_26/SHGN7_S001_S001_T007_ISO1.MOV')
+cap_right = cv.VideoCapture('/home/jacob/endo_calib/camera_calibration_5_26/8_11_5_26/SHGN7_S001_S001_T007_ISO2.MOV')
 
 
 
@@ -34,11 +34,11 @@ while(cap_left.isOpened() and cap_right.isOpened()):
         frame_left_gray_remap = cv.remap(frame_left_col, stereoMapL_x, stereoMapL_y, cv.INTER_LINEAR)
         frame_right_gray_remap = cv.remap(frame_right_col, stereoMapR_x, stereoMapR_y, cv.INTER_LINEAR)
 
+        combined_rectify = np.concatenate((frame_left_gray_remap,frame_right_gray_remap ), axis=1)
+        combined_original = np.concatenate((frame_left_col, frame_right_col), axis=1)
+        cv.imshow('rectified',combined_rectify)
+        cv.imshow('original',combined_original)
 
-        cv.imshow('left',frame_left_gray_remap)
-        cv.imshow('right',frame_right_gray_remap)
-        cv.imshow('left_original', frame_left_col)
-        cv.imshow('right_original', frame_right_col)
 
         # cv.imshow('remap', frame_right_gray_remap)
 

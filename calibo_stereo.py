@@ -30,8 +30,8 @@ distL = []
 distR = []
 
 # grab extracted frames from a folder and add it to a list and sort it
-images_L = glob.glob('/home/jacob/endo_calib/ENDO_AR/left_calib_one/*')
-images_R = glob.glob('/home/jacob/endo_calib/ENDO_AR/right_calib_one/*')
+images_L = glob.glob('/home/jacob/endo_calib/camera_calibration_5_26/8_11_5_26/chosen_frameL/*')
+images_R = glob.glob('/home/jacob/endo_calib/camera_calibration_5_26/8_11_5_26/chosen_frameR/*')
 images_sort_L = sorted(images_L)
 images_sort_R = sorted(images_R)
 chosen = []
@@ -45,14 +45,19 @@ height = dimensions[0]
 print('width:', width)
 print('height', height)
 
-K, k, cam_rvecs, cam_tvecs = AR_functions.readCalibParameters('/home/jacob/endo_calib/ENDO_AR/cam_calib_nodist.json')
+K, k, cam_rvecs, cam_tvecs = AR_functions.readCalibParameters('/home/jacob/endo_calib/camera_calibration_5_26/8_11_5_26/dual_cal.json')
 
 camera_matrix_L = np.array(K[0])
 camera_matrix_R = np.array(K[1])
-distL = np.array(k[0])
-distR = np.array(k[1])
+distL = np.array(k[0][:4])
+distR = np.array(k[1][:4])
 r_vecs = cam_rvecs[1]
 t_vecs = cam_tvecs[1]
+
+rx = r_vecs[0]
+ry = r_vecs[1]
+rz = r_vecs[2]
+
 
 print('camera_matrix_L:\n', camera_matrix_L)
 print('camera_matrix_R:\n', camera_matrix_R)
@@ -61,42 +66,48 @@ print('distR:\n', distR)
 print('r_vecs:\n', r_vecs)
 print('t_vecs:\n', t_vecs)
 
+theta = np.sqrt(rx**2 + ry**2 + rz**2)
+axis = np.array([rx, ry, rz]) / theta
+rotation_matrix, _ = cv.Rodrigues(theta * axis)
 
 
-# left_chosen_path, right_chosen_path = AR_functions.choose_stereo_pairs(images_sort_L, images_sort_R, chessboardSize)
+print('3x3 rotation matrix:\n', rotation_matrix)
 
 
-# objpoints_L, imgpoints_L = AR_functions.calibrate_fine(images_sort_L, chessboardSize)
-# print('left calibrated')
-# objpoints_R, imgpoints_R = AR_functions.calibrate_fine(images_sort_R, chessboardSize)
-# print('right calibrated')
+
+
+
+objpoints_L, imgpoints_L = AR_functions.calibrate_fine(images_sort_L, chessboardSize)
+print('left calibrated')
+objpoints_R, imgpoints_R = AR_functions.calibrate_fine(images_sort_R, chessboardSize)
+print('right calibrated')
+
+flags = 0
+flags |= cv.CALIB_FIX_INTRINSIC
+# Here we fix the intrinsic camara matrixes so that only Rot, Trns, Emat and Fmat are calculated.
+# Hence intrinsic parameters are the same
+criteria_stereo = (cv.TERM_CRITERIA_EPS + cv.TERM_CRITERIA_MAX_ITER, 30, 0.001)
+# This step is performed to transformation between the two cameras and calculate Essential and Fundamental matrix
+# Size of the image used only to initialize the intrinsic camera matrix [w,h].
+retStereo, stereoCameraMatrixL, distL_stereo, stereoCameraMatrixR, distR_stereo, rot, trans, essentialMatrix, fundamentalMatrix = cv.stereoCalibrate(objpoints_L, imgpoints_L, imgpoints_R,
+camera_matrix_L, distL, camera_matrix_R, distR, (width, height), criteria_stereo, flags)
+
+print('retStereo:', retStereo)
+print('stereoCameraMatrixL:', stereoCameraMatrixL)
+print('distL_stereo:', distL_stereo)
+print('stereoCameraMatrixR:', stereoCameraMatrixR)
+print('distR_stereo:', distR_stereo)
+print('rot:', rot)
+print('trans:', trans)
+print('essentialMatrix:', essentialMatrix)
+print('fundamentalMatrix:', fundamentalMatrix)
 #
-# flags = 0
-# flags |= cv.CALIB_FIX_INTRINSIC
-# # Here we fix the intrinsic camara matrixes so that only Rot, Trns, Emat and Fmat are calculated.
-# # Hence intrinsic parameters are the same
-# criteria_stereo = (cv.TERM_CRITERIA_EPS + cv.TERM_CRITERIA_MAX_ITER, 30, 0.001)
-# # This step is performed to transformation between the two cameras and calculate Essential and Fundamental matrix
-# # Size of the image used only to initialize the intrinsic camera matrix [w,h].
-# retStereo, stereoCameraMatrixL, distL_stereo, stereoCameraMatrixR, distR_stereo, rot, trans, essentialMatrix, fundamentalMatrix = cv.stereoCalibrate(objpoints_L, imgpoints_L, imgpoints_R,
-# camera_matrix_L, distL, camera_matrix_R, distR, (width, height), criteria_stereo, flags)
-#
-# print('retStereo:', retStereo)
-# print('stereoCameraMatrixL:', stereoCameraMatrixL)
-# print('distL_stereo:', distL_stereo)
-# print('stereoCameraMatrixR:', stereoCameraMatrixR)
-# print('distR_stereo:', distR_stereo)
-# print('rot:', rot)
-# print('trans:', trans)
-# print('essentialMatrix:', essentialMatrix)
-# print('fundamentalMatrix:', fundamentalMatrix)
-
 
 # StereoVison rectification
 rectifyScale = 1
-rectL_stereo, rectR_stereo, projMatrixL, projMatrixR, Q, roi_L, roi_R = cv.stereoRectify(camera_matrix_L, distL,
-                                                                                           camera_matrix_R, distR,
-                                                                                           (width, height), r_vecs, t_vecs, rectifyScale, (0, 0))
+rectL_stereo, rectR_stereo, projMatrixL, projMatrixR, Q, roi_L, roi_R = cv.stereoRectify(stereoCameraMatrixL, distL_stereo,
+                                                                                           stereoCameraMatrixR, distR_stereo,
+                                                                                           (width, height), rotation_matrix, t_vecs, rectifyScale, (0, 0))
 print("rectL_stereo:\n", rectL_stereo)
 print("rectR_stereo:\n", rectR_stereo)
 print("projMatrixL:\n", projMatrixL)
@@ -110,7 +121,7 @@ stereoMapL = cv.initUndistortRectifyMap(camera_matrix_L, distL, rectL_stereo, pr
 stereoMapR = cv.initUndistortRectifyMap(camera_matrix_R, distR, rectR_stereo, projMatrixR,(width, height), cv.CV_16SC2)
 
 print("Saving parameters!")
-cv_file = cv.FileStorage('stereoMap5_12.xml', cv.FILE_STORAGE_WRITE)
+cv_file = cv.FileStorage('stereoMap5_26.xml', cv.FILE_STORAGE_WRITE)
 
 cv_file.write('stereoMapL_x', stereoMapL[0])
 cv_file.write('stereoMapL_y', stereoMapL[1])

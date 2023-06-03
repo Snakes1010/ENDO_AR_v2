@@ -66,7 +66,7 @@ def draw_last_point(image, corners, color=(0, 0, 255), radius=5):
         cv.putText(image, coordinates_text, text_offset, cv.FONT_HERSHEY_SIMPLEX, 1, color, thickness=3)
 
 #############################################################
-def choose_stereo_pairs(images_L, images_R, chessboardSize):
+def choose_stereo_pairs(images_L, images_R, chessboardSize, resize_factor):
     def on_trackbar(pos):
         pass
 
@@ -101,7 +101,46 @@ def choose_stereo_pairs(images_L, images_R, chessboardSize):
             combined = np.concatenate((img_l, img_r), axis=1)
             cv.putText(combined, "NO MATCH FOUND_" + str(pos), (10, 50), cv.FONT_ITALIC, 2, (0, 0, 255), 4, cv.LINE_AA)
 
-        cv.imshow("combined", combined)
+        resized_width = int(combined.shape[1] * resize_factor)
+        resized_height = int(combined.shape[0] * resize_factor)
+        combined_resized = cv.resize(combined, (resized_width, resized_height))
+        cv.imshow("combined", combined_resized)
+        key = cv.waitKey(10) & 0xFF
+
+        if key == ord('q'):
+            cv.destroyAllWindows()
+            break
+        if key == ord('s'):
+            left_chosen_path.append(images_L[pos])
+            right_chosen_path.append(images_R[pos])
+            print(left_chosen_path)
+            print(right_chosen_path)
+            print("Image Added #_" + str(len(left_chosen_path)))
+
+    return left_chosen_path, right_chosen_path
+############################################
+
+def choose_charuco_pairs(images_L, images_R, resize_factor):
+    def on_trackbar(pos):
+        pass
+
+    criteria = (cv.TERM_CRITERIA_EPS + cv.TERM_CRITERIA_MAX_ITER, 30, 0.001)
+    cv.namedWindow('combined')
+    cv.createTrackbar('Frame', 'combined', 0, len(images_L) - 1, on_trackbar)
+    left_chosen_path = []
+    right_chosen_path = []
+
+    while True:
+        pos = cv.getTrackbarPos('Frame', 'combined')
+        img_l = cv.imread(images_L[pos])
+        img_r= cv.imread(images_R[pos])
+
+        combined = np.concatenate((img_l, img_r), axis=1)
+
+        resized_width = int(combined.shape[1] * resize_factor)
+        resized_height = int(combined.shape[0] * resize_factor)
+        combined_resized = cv.resize(combined, (resized_width, resized_height))
+        cv.imshow("combined", combined_resized)
         key = cv.waitKey(10) & 0xFF
 
         if key == ord('q'):
