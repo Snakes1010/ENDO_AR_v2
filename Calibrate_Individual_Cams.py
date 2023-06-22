@@ -15,8 +15,8 @@ camera_parameters_L_file ='calib_300_L.yaml'
 camera_parameters_R_file ='calib_300_R.yaml'
 
 # play(sound_search_CB)
-images_left = glob.glob('/Users/jcsimon/Desktop/ENDO_AR/mantis_more_angles/frameL/*')
-images_right = glob.glob('/Users/jcsimon/Desktop/ENDO_AR/mantis_more_angles/frameR/*')
+images_left = glob.glob('/home/jacob/endo_calib/camera_calibration_5_26/8_11_5_26/chosen_framesL2/*')
+images_right = glob.glob('/home/jacob/endo_calib/camera_calibration_5_26/8_11_5_26/chosen_framesR2/*')
 images_left_sort = sorted(images_left)
 images_right_sort = sorted(images_right)
 dimensions = cv.imread(images_left_sort[0])

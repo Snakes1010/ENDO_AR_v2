@@ -3,8 +3,8 @@ import AR_functions
 import shutil
 import os
 
-dir_name = "/home/jacob/endo_calib/camera_calibration_5_26/charuco/chosenR"
-data_1 = AR_functions.import_yaml('5_26_charuco_R.yaml')
+dir_name = "/home/jacob/endo_calib/ENDO_AR/mantis_2mm_8x11/chosenR"
+data_1 = AR_functions.import_yaml('2mm_R.yaml')
 
 
 # Create the destination directory if it doesn't exist

@@ -31,14 +31,11 @@ while(cap_left.isOpened() and cap_right.isOpened()):
         frame_left_gray = cv.cvtColor(frame_left_col, cv.COLOR_BGR2GRAY)
         frame_right_gray = cv.cvtColor(frame_right_col, cv.COLOR_BGR2GRAY)
         # # remap function on gray images
-        frame_left_gray_remap = cv.remap(frame_left_gray, stereoMapL_x, stereoMapL_y, cv.INTER_LANCZOS4, cv.BORDER_CONSTANT, 0)
-        frame_right_gray_remap = cv.remap(frame_right_gray, stereoMapR_x, stereoMapR_y, cv.INTER_LANCZOS4, cv.BORDER_CONSTANT, 0)
+        frame_left_gray_remap = cv.remap(frame_left_col, stereoMapL_x, stereoMapL_y, cv.INTER_LANCZOS4, cv.BORDER_CONSTANT, 0)
+        frame_right_gray_remap = cv.remap(frame_right_col, stereoMapR_x, stereoMapR_y, cv.INTER_LANCZOS4, cv.BORDER_CONSTANT, 0)
 
         combined_rectify = np.concatenate((frame_left_gray_remap,frame_right_gray_remap), axis=1)
         combined_original = np.concatenate((frame_left_col, frame_right_col), axis=1)
-        for i in range(0, combined_rectify.shape[0], 30):
-                cv.line(combined_rectify, (0, i), (combined_rectify.shape[1], i), (255, 0, 255), 1)
-                cv.line(combined_original, (0, i), (combined_original.shape[1], i), (0, 255, 255), 1)
         cv.imshow('rectified',combined_rectify)
         cv.imshow('original',combined_original)
 
@@ -90,3 +87,4 @@ cap_right.release()
 cap_left.release()
 
 cv.destroyAllWindows()
++
