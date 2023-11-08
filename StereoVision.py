@@ -1,6 +1,5 @@
 import sys
 import cv2 as cv
-import pyexr
 import numpy as np
 import time
 from matplotlib import pyplot as plt

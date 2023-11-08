@@ -46,7 +46,7 @@ height = dimensions[0]
 print('width:', width)
 print('height', height)
 
-K, k, cam_rvecs, cam_tvecs = AR_functions.readCalibParameters('/home/jacob/endo_calib/low_cost_proj/8_11_2x/low_cost_dual.json')
+K, k, cam_rvecs, cam_tvecs = AR_functions.readCalibParameters('/home/jacob/endo_calib/low_cost_proj/8_11_2x/low_cost_dual_Charuco.json')
 
 camera_matrix_L = np.array(K[0])
 camera_matrix_R = np.array(K[1])
@@ -126,12 +126,15 @@ print("Q:\n", Q)
 print("roi_L:\n", roi_L)
 print("roi_R:\n", roi_R)
 
+fs = cv.FileStorage('Q_7_25.yaml', cv.FILE_STORAGE_WRITE)
+fs.write('Q', Q)
+fs.release()
 
 stereoMapL = cv.initUndistortRectifyMap(camera_matrix_L, distL, R1, P1,(width, height), cv.CV_32FC1)
 stereoMapR = cv.initUndistortRectifyMap(camera_matrix_R, distR, R2, P2,(width, height), cv.CV_32FC1)
 
 print("Saving parameters!")
-cv_file = cv.FileStorage('lowcost.xml', cv.FILE_STORAGE_WRITE)
+cv_file = cv.FileStorage('lowcost_7_25.xml', cv.FILE_STORAGE_WRITE)
 
 cv_file.write('stereoMapL_x', stereoMapL[0])
 cv_file.write('stereoMapL_y', stereoMapL[1])

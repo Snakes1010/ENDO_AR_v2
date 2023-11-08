@@ -17,7 +17,7 @@ properties = [cv.CAP_PROP_POS_MSEC, cv.CAP_PROP_POS_FRAMES, cv.CAP_PROP_POS_AVI_
 # Property names
 property_names = ["POS_MSEC", "POS_FRAMES", "POS_AVI_RATIO", "FRAME_WIDTH",
                   "FRAME_HEIGHT", "FPS", "FOURCC", "FRAME_COUNT", "FORMAT", "MODE",
-                  "BRIGHTNESS", "CONTRAST", "SATURATION", "HUE", "GAIN", "EXPOSURE"]
+                  "BRIGHTNESS", "CONTRAST", "SATURATION", "HUE", "GAIN", "EXPOqSURE"]
 
 chessboardSize = (10,7)
 # termination criteria
@@ -30,7 +30,7 @@ objpoints = []
 imgpoints_L = [] # 2d points in image plane.
 imgpoints_R = [] # 2d points in image plane.
 
-save_dir = "/home/jacob/endo_calib/low_cost_proj/8_11_2x/framesR"
+save_dir = "/home/jacob/endo_calib/low_cost_proj/8_11_2x/7_19_framesR"
 os.makedirs(save_dir, exist_ok=True)
 
 

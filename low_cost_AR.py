@@ -11,18 +11,31 @@ stereoMapL_x = cv_file.getNode('stereoMapL_x').mat()
 stereoMapL_y = cv_file.getNode('stereoMapL_y').mat()
 stereoMapR_x = cv_file.getNode('stereoMapR_x').mat()
 stereoMapR_y = cv_file.getNode('stereoMapR_y').mat()
+
+################################################################
+# AR with google cardboard
+AR_use = False
+if AR_use == True:
+    cv.namedWindow('AR')
+    scale_percent = 150  # percent of original size, 200 makes the image twice as large
+    width = int((1280) * scale_percent / 100)
+    height = int(480 * scale_percent / 100)
+    dim = (width, height)
+    print(dim)
+else:
+    cv.namedWindow('AR')
 ################################################################
 # BLOCK MATCHER
 
-stereoMatcher = cv.StereoBM_create()
-stereoMatcher.setMinDisparity(5)
-stereoMatcher.setNumDisparities(128)
-stereoMatcher.setBlockSize(21)
+stereoMatcher = cv.StereoSGBM_create()
+stereoMatcher.setMinDisparity(4)
+stereoMatcher.setNumDisparities(16)
+stereoMatcher.setBlockSize(5)
 # stereoMatcher.setROI1(leftROI)
 # stereoMatcher.setROI2(rightROI)
-stereoMatcher.setSpeckleRange(16)
-stereoMatcher.setSpeckleWindowSize(45)
-
+stereoMatcher.setSpeckleRange(44)
+stereoMatcher.setSpeckleWindowSize(7)
+adjusted_depth = 2000
 cv.namedWindow('Depth')
 
 # Define a callback function for the trackbars
@@ -47,12 +60,15 @@ def adjust_speckle_range(val):
 def adjust_speckle_window_size(val):
     print(f"speckle window = {val}")
     stereoMatcher.setSpeckleWindowSize(val)
+def adjusted_depth_range(val):
+    adjusted_depth = val
 # Create trackbars for 'minDisparity', 'numDisparities' and 'blockSize'.
-cv.createTrackbar('Min Disparity', 'Depth', 1, 50, adjust_min_disparity)
-cv.createTrackbar('Num Disparities', 'Depth', 8, 16, adjust_num_disparities)  # the max value is set to 16*16
-cv.createTrackbar('Block Size', 'Depth', 11, 50, adjust_block_size)  # the max value is set to 50*2+1
-cv.createTrackbar('Speckle Range', 'Depth', 16, 50, adjust_speckle_range)
-cv.createTrackbar('Speckle Window Size', 'Depth', 45, 200, adjust_speckle_window_size)
+cv.createTrackbar('Min Disparity', 'Depth', 4, 50, adjust_min_disparity)
+cv.createTrackbar('Num Disparities', 'Depth', 1, 16, adjust_num_disparities)  # the max value is set to 16*16
+cv.createTrackbar('Block Size', 'Depth', 5, 50, adjust_block_size)  # the max value is set to 50*2+1
+cv.createTrackbar('Speckle Range', 'Depth', 44, 50, adjust_speckle_range)
+cv.createTrackbar('Speckle Window Size', 'Depth', 7, 200, adjust_speckle_window_size)
+cv.createTrackbar('adjusted depth', 'Depth', 2000, 10000, adjusted_depth_range)
 
 
 #################################################################
@@ -103,12 +119,24 @@ while True:
     gray_right_remap = cv.cvtColor(frame_right_remap, cv.COLOR_BGR2GRAY)
     depth = stereoMatcher.compute(gray_left_remap,gray_right_remap)
 
-    combined_rectify = np.concatenate((frame_left_remap, frame_right_remap), axis=1)
 
-    cv.imshow('rectified', combined_rectify)
-    cv.imshow('Depth', depth/2046)
-    if cv.waitKey(1) & 0xFF == ord('q'):
+    if AR_use == True:
+        combined_rectify = np.concatenate((frame_left_remap, frame_right_remap), axis=1)
+        resized = cv.resize(combined_rectify, dim, interpolation=cv.INTER_AREA)
+
+        cv.line(resized, (0,(360)), (1920, 360),(255,0,255), 3)
+        print(resized.shape)
+        cv.imshow('AR', resized)
+        cv.moveWindow('AR', 5600, 150)
+        cv.imshow('Depth', depth/2000)
+        if cv.waitKey(1) & 0xFF == ord('q'):
             break
+    else:
+        combined_rectify = np.concatenate((frame_left_remap, frame_right_remap), axis=1)
+        cv.imshow('AR', combined_rectify)
+        cv.imshow('Depth', depth / 2000)
+        if cv.waitKey(1) & 0xFF == ord('q'):
+                break
 
 left_cam.release()
 right_cam.release()

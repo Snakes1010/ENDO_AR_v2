@@ -20,8 +20,8 @@ property_names = ["POS_MSEC", "POS_FRAMES", "POS_AVI_RATIO", "FRAME_WIDTH",
                   "FRAME_HEIGHT", "FPS", "FOURCC", "FRAME_COUNT", "FORMAT", "MODE",
                   "BRIGHTNESS", "CONTRAST", "SATURATION", "HUE", "GAIN", "EXPOSURE"]
 
-save_dir_L = "/home/jacob/endo_calib/low_cost_proj/8_11_2x/stereo_video_L.mp4"
-save_dir_R = "/home/jacob/endo_calib/low_cost_proj/8_11_2x/stereo_video_R.mp4"
+save_dir_L = "/home/jacob/endo_calib/low_cost_proj/8_11_2x/laser_2mm_L.mp4"
+save_dir_R = "/home/jacob/endo_calib/low_cost_proj/8_11_2x/laser_2mm_R.mp4"
 
 
 frame_size = (640,480)
