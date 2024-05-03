@@ -5,16 +5,43 @@ import numpy as np
 import open3d as o3d
 import json
 
-fs = cv.FileStorage('Q_7_25.yaml', cv.FILE_STORAGE_READ)
+
+###########################################
+# Fn coverts a distance image from blender EXR 
+# where dist is measured from the camera to a 
+# depth image where there in no angular bias
+###########################################
+
+def dist2depth_img(dist_img, focal =3500):
+    img_width = dist_img.shape[1]
+    img_height = dist_img.shape[0]
+
+    cx = img_width // 2
+    cy = img_height// 2
+
+    xs = np.arange(img_width) - cx
+    ys = np.arange(img_height) - cy
+    xis, yis = np.meshgrid(xs, ys)
+    depth = np.sqrt(dist_img**2 / ((xis**2 + yis**2)/ (focal**2) +1))
+
+    return depth.astype(np.float32)
+
+###########################################
+# LOADS the Q calibration Matrix from dir made 
+# from calib_stereo.py
+###########################################
+
+fs = cv.FileStorage('Q_12_7.yaml', cv.FILE_STORAGE_READ)
 Q = fs.getNode('Q').mat()
 print("Loaded Q:\n", Q)
-
-
 # Release the FileStorage object
 fs.release()
 
+############################################
 # Import camera calibration data
-with open('/media/jacob/SNAKE_2TB/endo_calib/low_cost_proj/8_11_2x/low_cost_dual_Charuco.json', 'r') as file:
+# from calib.io program via json
+#############################################
+with open('/home/jacob/Snake2TB/endo_calib/low_cost_proj/8_11_2x/low_cost_dual_Charuco.json', 'r') as file:
     calib = json.load(file)
 
 sensor_width_mm = 8.8
@@ -53,53 +80,57 @@ tz = trans['z']*1000
 print('left camera focal length:', left_cam_f_px)
 print('baseline in mm:', tx)
 
-# Load EXR file
-file_L = cv.imread("/media/jacob/SNAKE_2TB/Blender_bin/Endo_scans/stereo_test_images/depth_000025_L.exr", cv.IMREAD_ANYCOLOR | cv.IMREAD_ANYDEPTH)
-file_R = cv.imread("/media/jacob/SNAKE_2TB/Blender_bin/Endo_scans/stereo_test_images/depth_000025_R.exr", cv.IMREAD_ANYCOLOR | cv.IMREAD_ANYDEPTH)
+##############################################
+# Load EXR file of L&R created from blender
+####################################################
 
+file_L = cv.imread("/home/jacob/Snake2TB/Blender_bin/Endo_scans/batching_feb_1_run1/013V9CKV_upper/depth/16_7_0007_L.exr", cv.IMREAD_ANYCOLOR | cv.IMREAD_ANYDEPTH)
+file_R = cv.imread("/home/jacob/Snake2TB/Blender_bin/Endo_scans/batching_feb_1_run1/013V9CKV_upper/depth/16_7_0007_R.exr", cv.IMREAD_ANYCOLOR | cv.IMREAD_ANYDEPTH)
 gray_image_L = cv.cvtColor(file_L, cv.COLOR_BGR2GRAY)
 gray_image_R = cv.cvtColor(file_R, cv.COLOR_BGR2GRAY)
 
 
-def dist2depth_img(dist_img, focal =3500):
-    img_width = dist_img.shape[1]
-    img_height = dist_img.shape[0]
-
-    cx = img_width // 2
-    cy = img_height// 2
-
-    xs = np.arange(img_width) - cx
-    ys = np.arange(img_height) - cy
-    xis, yis = np.meshgrid(xs, ys)
-    depth = np.sqrt(dist_img**2 / ((xis**2 + yis**2)/ (focal**2) +1))
-
-    return depth.astype(np.float32)
-
 gray_depth_L = dist2depth_img(gray_image_L)
 gray_depth_R = dist2depth_img(gray_image_R)
 
-disp_L = (left_cam_f_px * -tx) / gray_depth_L
-print(disp_L)
+disp_L = (left_cam_f_px * abs(tx) / gray_depth_L)
 
 depth_o3d_L = o3d.geometry.Image(gray_depth_L)
 depth_o3d_R = o3d.geometry.Image(gray_depth_R)
-
+ 
 pcd_L = o3d.geometry.PointCloud.create_from_depth_image(depth_o3d_L, o3d.camera.PinholeCameraIntrinsic(
             640, 480, 3500, 3500, 340, 240 ))
 pcd_R = o3d.geometry.PointCloud.create_from_depth_image(depth_o3d_R, o3d.camera.PinholeCameraIntrinsic(
             640, 480, 3500, 3500, 340, 240 ))
-o3d.visualization.draw_geometries([pcd_L, pcd_R])
+o3d.visualization.draw_geometries([pcd_L])
 
-print(gray_depth_R)
-print(gray_depth_R.dtype)
-print(gray_depth_R.shape)
+(min_val, max_val, min_loc, max_loc) = cv.minMaxLoc(gray_image_L)
 
-(min_val, max_val, min_loc, max_loc) = cv.minMaxLoc(gray_image_R)
-
-normalized_image = cv.normalize(disp_L, None, 0 , 255, cv.NORM_MINMAX, dtype=cv.CV_8U)
+normalized_disparity_image = cv.normalize(disp_L, None, 0 , 255, cv.NORM_MINMAX, dtype=cv.CV_8U)
 print(f"Min pixel value: {min_val} at location {min_loc}")
 print(f"Max pixel value: {max_val} at location {max_loc}")
 
-points_3D = cv.reprojectImageTo3D(disp_L, Q, handleMissingValues=False)
-print(points_3D.dtype)
+cv.imshow("normalized disparity image", normalized_disparity_image)
+cv.waitKey(5000)
+cv.destroyAllWindows()
 
+ e)
+
+# Filter out invalid points (i.e., points with infinite or NaN values)
+mask = (points_3D[:, :, 2] > 0) & np.isfinite(points_3D[:, :, 2])
+filtered_points_3D = points_3D[mask]
+
+# Convert to Open3D point cloud
+pcd_3D = o3d.geometry.PointCloud()
+pcd_3D.points = o3d.utility.Vector3dVector(filtered_points_3D)
+
+# Optionally: Add colors to the point cloud
+# Assuming you have a corresponding RGB image, 'rgb_image':
+# valid_colors = rgb_image[mask]
+# pcd_3D.colors = o3d.utility.Vector3dVector(valid_colors / 255.0)
+
+# Visualize the point cloud
+o3d.visualization.draw_geometries([pcd_3D])
+# o3d.visualization.draw_geometries([pcd_3D, pcd_L])
+# # Close OpenCV window if open
+cv.destroyAllWindows()

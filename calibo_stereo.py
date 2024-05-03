@@ -31,8 +31,8 @@ distL = []
 distR = []
 
 # grab extracted frames from a folder and add it to a list and sort it
-images_L = glob.glob('/home/jacob/endo_calib/low_cost_proj/8_11_2x/stereoframesL/*')
-images_R = glob.glob('/home/jacob/endo_calib/low_cost_proj/8_11_2x/stereoframesR/*')
+images_L = glob.glob('/home/jacob/Snake2TB/endo_calib/low_cost_proj/8_11_2x/stereoframesL/*')
+images_R = glob.glob('/home/jacob/Snake2TB/endo_calib/low_cost_proj/8_11_2x/stereoframesR/*')
 images_sort_L = sorted(images_L)
 images_sort_R = sorted(images_R)
 chosen = []
@@ -46,7 +46,7 @@ height = dimensions[0]
 print('width:', width)
 print('height', height)
 
-K, k, cam_rvecs, cam_tvecs = AR_functions.readCalibParameters('/home/jacob/endo_calib/low_cost_proj/8_11_2x/low_cost_dual_Charuco.json')
+K, k, cam_rvecs, cam_tvecs = AR_functions.readCalibParameters('/home/jacob/Snake2TB/endo_calib/low_cost_proj/8_11_2x/low_cost_dual_Charuco.json')
 
 camera_matrix_L = np.array(K[0])
 camera_matrix_R = np.array(K[1])
@@ -70,38 +70,37 @@ print('t_vecs:\n', t_vecs)
 theta = np.sqrt(rx**2 + ry**2 + rz**2)
 axis = np.array([rx, ry, rz]) / theta
 rotation_matrix, _ = cv.Rodrigues(theta * axis)
-# rotation_matrix_transpose = rotation_matrix.T
-# print('rotation_matrix transpose:\n', rotation_matrix_transpose)
-print('3x3 rotation matrix:\n', rotation_matrix)
+# # rotation_matrix_transpose = rotation_matrix.T
+# # print('rotation_matrix transpose:\n', rotation_matrix_transpose)
+# print('3x3 rotation matrix:\n', rotation_matrix)
 
-identity_matrix = np.eye(3)
-#
+# # identity_matrix = np.eye(3)
+# # #
 # objpoints_L, imgpoints_L = AR_functions.calibrate_fine(images_sort_L, chessboardSize)
 # print('left calibrated')
 # objpoints_R, imgpoints_R = AR_functions.calibrate_fine(images_sort_R, chessboardSize)
 # print('right calibrated')
 
-#
-# # Here we fix the intrinsic camara matrixes so that only Rot, Trns, Emat and Fmat are calculated.
-# # Hence intrinsic parameters are the same
-# criteria_stereo = (cv.TERM_CRITERIA_EPS + cv.TERM_CRITERIA_MAX_ITER, 30, 0.001)
-# # possible flags are
-# # cv.CALIB_FIX_INTRINSIC
-# # cv.CALIB_USE_INTRINSIC_GUESS
-# # cv.CALIB_USE_EXTRINSIC_GUESS
-# # cv.CALIB_FIX_PRINCIPAL_POINT
-# # cv.CALIB_FIX_FOCAL_LENGTH
-# # cv.CALIB_FIX_ASPECT_RATIO
-# # cv.CALIB_ZERO_TANGENT_DIST
-# # cv.CALIB_FIX_K1....
-# # cv.CALIB_RATIONAL_MODEL
-#
-#
-# # This step is performed to transformation between the two cameras and calculate Essential and Fundamental matrix
-# # Size of the image used only to initialize the intrinsic camera matrix [w,h].
+# # #
+# # # # Here we fix the intrinsic camara matrixes so that only Rot, Trns, Emat and Fmat are calculated.
+# # # # Hence intrinsic parameters are the same
+# criteria_stereo = None
+# # # # possible flags are
+# # # # cv.CALIB_FIX_INTRINSIC
+# # # # cv.CALIB_USE_INTRINSIC_GUESS
+# # # # cv.CALIB_USE_EXTRINSIC_GUESS
+# # # # cv.CALIB_FIX_PRINCIPAL_POINT
+# # # # cv.CALIB_FIX_FOCAL_LENGTH
+# # # # cv.CALIB_FIX_ASPECT_RATIO
+# # # # cv.CALIB_ZERO_TANGENT_DIST
+# # # # cv.CALIB_FIX_K1....
+# # # # cv.CALIB_RATIONAL_MODEL
+# # #
+# # #
+
 # retStereo, stereoCameraMatrixL, distL_stereo, stereoCameraMatrixR, distR_stereo, rot, trans, essentialMatrix, fundamentalMatrix = cv.stereoCalibrate(objpoints_L, imgpoints_L, imgpoints_R,
-# camera_matrix_L, distL, camera_matrix_R, distR, (width, height), criteria_stereo, flags=cv.CALIB_FIX_INTRINSIC + cv.CALIB_SAME_FOCAL_LENGTH+ cv.CALIB_ZERO_TANGENT_DIST + cv.CALIB_FIX_K1 + cv.CALIB_FIX_K2 + cv.CALIB_FIX_K3)
-#
+# camera_matrix_L, distL, camera_matrix_R, distR, (width, height), criteria_stereo)
+
 # print('retStereo:', retStereo)
 # print('stereoCameraMatrixL:', stereoCameraMatrixL)
 # print('distL_stereo:', distL_stereo)
@@ -111,13 +110,12 @@ identity_matrix = np.eye(3)
 # print('trans:', trans)
 # print('essentialMatrix:', essentialMatrix)
 # print('fundamentalMatrix:', fundamentalMatrix)
-#
+
 #
 # # StereoVision rectification
 
 R1, R2, P1, P2, Q, roi_L, roi_R = cv.stereoRectify(camera_matrix_L, distL, camera_matrix_R, distR,
-                                                                     (width, height), rotation_matrix, t_vecs,
-                                                                        flags=0, alpha=-1)
+                                                                     (width, height), rotation_matrix, t_vecs)
 print("R1:\n", R1)
 print("R2:\n", R2)
 print("projMatrixL:\n", P1)
@@ -126,15 +124,17 @@ print("Q:\n", Q)
 print("roi_L:\n", roi_L)
 print("roi_R:\n", roi_R)
 
-fs = cv.FileStorage('Q_7_25.yaml', cv.FILE_STORAGE_WRITE)
+fs = cv.FileStorage('Q_2_9.yaml', cv.FILE_STORAGE_WRITE)
 fs.write('Q', Q)
 fs.release()
 
 stereoMapL = cv.initUndistortRectifyMap(camera_matrix_L, distL, R1, P1,(width, height), cv.CV_32FC1)
 stereoMapR = cv.initUndistortRectifyMap(camera_matrix_R, distR, R2, P2,(width, height), cv.CV_32FC1)
 
+print(camera_matrix_L)
+
 print("Saving parameters!")
-cv_file = cv.FileStorage('lowcost_7_25.xml', cv.FILE_STORAGE_WRITE)
+cv_file = cv.FileStorage('lowcost_2_9.xml', cv.FILE_STORAGE_WRITE)
 
 cv_file.write('stereoMapL_x', stereoMapL[0])
 cv_file.write('stereoMapL_y', stereoMapL[1])

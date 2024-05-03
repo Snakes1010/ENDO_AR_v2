@@ -1,13 +1,12 @@
 import cv2 as cv
 import numpy as np
-import _torch_scratch
 import open3d as o3d
-from pytorch3d.io import load_ply
+
 
 ################################################################
 # REMAPING
 cv_file = cv.FileStorage()
-cv_file.open('lowcost_7_25.xml', cv.FileStorage_READ)
+cv_file.open('dualcam_5_2.xml', cv.FileStorage_READ)
 
 stereoMapL_x = cv_file.getNode('stereoMapL_x').mat()
 stereoMapL_y = cv_file.getNode('stereoMapL_y').mat()
@@ -16,7 +15,7 @@ stereoMapR_y = cv_file.getNode('stereoMapR_y').mat()
 ################################################################
 # import Q
 
-fs = cv.FileStorage('Q_7_25.yaml', cv.FILE_STORAGE_READ)
+fs = cv.FileStorage('Q_dual_5_5.yaml', cv.FILE_STORAGE_READ)
 Q = fs.getNode('Q').mat()
 print("Loaded Q:\n", Q)
 
@@ -84,15 +83,6 @@ cv.createTrackbar('speckleWindowSize', 'Depth', 0, 200, update)
 cv.createTrackbar('speckleRange', 'Depth', 2, 5, update)
 # cv.createTrackbar('preFilterCap', 'Depth', 56, 100, update)
 
-########################################################################
-#pointcloud ply
-
-# if torch.cuda.is_available():
-#     device = torch.device("cuda:0")
-#     print('GPU enabled')
-# else:
-#     device = torch.device("cpu")
-#     print("WARNING: CPU only, this will be slow!")
 cloudnumber =0
 
 def createPointCloudFileColor(vertices, colors, filename):
@@ -180,38 +170,45 @@ cv.createTrackbar('beta', 'Overlay', beta_overlay, 10000, update_overlay_beta)
 cv.createTrackbar('gamma', 'Overlay', gama_overlay, 10, update_overlay_alpha)
 
 #################################################################
-#CAMERA SET UP
+#CAMERA SET UP STEREO RIG
+
+# left_cam = cv.VideoCapture(0)
+# right_cam = cv.VideoCapture(2)
+
+# print_shape_once = True
+
+# left_cam.set(cv.CAP_PROP_BRIGHTNESS, 0)  # Brightness: -64 to 64, default: 0
+# left_cam.set(cv.CAP_PROP_CONTRAST, 32)  # Contrast: 0 to 64, default: 32
+# left_cam.set(cv.CAP_PROP_SATURATION, 64)  # Saturation: 0 to 128, default: 64
+# left_cam.set(cv.CAP_PROP_HUE, 0)  # Hue: -40 to 40, default: 0
+# left_cam.set(cv.CAP_PROP_AUTO_WB, 1)  # White Balance, Automatic: 0 or 1, default: 1
+# left_cam.set(cv.CAP_PROP_GAMMA, 100)  # Gamma: 72 to 500, default: 100
+# left_cam.set(cv.CAP_PROP_GAIN, 0)  # Gain: 0 to 100, default: 0
+# left_cam.set(cv.CAP_PROP_SHARPNESS, 2)  # Sharpness: 0 to 6, default: 2
+# left_cam.set(cv.CAP_PROP_BACKLIGHT, 1)  # Backlight Compensation: 0 to 4, default: 1
+# left_cam.set(cv.CAP_PROP_AUTO_EXPOSURE, 3)  # Auto Exposure: 0 to 3, default: 1
+# left_cam.set(cv.CAP_PROP_EXPOSURE, 250) # Exposure Time, Absolute: 1 to 5000, default: 473
+# left_cam.set(cv.CAP_PROP_AUTO_EXPOSURE, 0)  # Exposure, Dynamic Framerate: 0 or 1, default: 0
+
+# right_cam.set(cv.CAP_PROP_BRIGHTNESS, 0)  # Brightness: -64 to 64, default: 0
+# right_cam.set(cv.CAP_PROP_CONTRAST, 32)  # Contrast: 0 to 64, default: 32
+# right_cam.set(cv.CAP_PROP_SATURATION, 64)  # Saturation: 0 to 128, default: 64
+# right_cam.set(cv.CAP_PROP_HUE, 0)  # Hue: -40 to 40, default: 0
+# right_cam.set(cv.CAP_PROP_AUTO_WB, 1)  # White Balance, Automatic: 0 or 1, default: 1
+# right_cam.set(cv.CAP_PROP_GAMMA, 100)  # Gamma: 72 to 500, default: 100
+# right_cam.set(cv.CAP_PROP_GAIN, 0)  # Gain: 0 to 100, default: 0
+# right_cam.set(cv.CAP_PROP_SHARPNESS, 2)  # Sharpness: 0 to 6, default: 2
+# right_cam.set(cv.CAP_PROP_BACKLIGHT, 1)  # Backlight Compensation: 0 to 4, default: 1
+# right_cam.set(cv.CAP_PROP_AUTO_EXPOSURE, 3)  # Auto Exposure: 0 to 3, default: 1
+# right_cam.set(cv.CAP_PROP_EXPOSURE, 250)  # Exposure Time, Absolute: 1 to 5000, default: 473
+# right_cam.set(cv.CAP_PROP_AUTO_EXPOSURE, 0)  # Exposure, Dynamic Framerate: 0 or 1, default: 0
+
+#################################################################
+#CAMERA SET UP MINI CAM
 
 left_cam = cv.VideoCapture(0)
-right_cam = cv.VideoCapture(2)
-
-print_shape_once = True
-
-left_cam.set(cv.CAP_PROP_BRIGHTNESS, 0)  # Brightness: -64 to 64, default: 0
-left_cam.set(cv.CAP_PROP_CONTRAST, 32)  # Contrast: 0 to 64, default: 32
-left_cam.set(cv.CAP_PROP_SATURATION, 64)  # Saturation: 0 to 128, default: 64
-left_cam.set(cv.CAP_PROP_HUE, 0)  # Hue: -40 to 40, default: 0
-left_cam.set(cv.CAP_PROP_AUTO_WB, 1)  # White Balance, Automatic: 0 or 1, default: 1
-left_cam.set(cv.CAP_PROP_GAMMA, 100)  # Gamma: 72 to 500, default: 100
-left_cam.set(cv.CAP_PROP_GAIN, 0)  # Gain: 0 to 100, default: 0
-left_cam.set(cv.CAP_PROP_SHARPNESS, 2)  # Sharpness: 0 to 6, default: 2
-left_cam.set(cv.CAP_PROP_BACKLIGHT, 1)  # Backlight Compensation: 0 to 4, default: 1
-left_cam.set(cv.CAP_PROP_AUTO_EXPOSURE, 3)  # Auto Exposure: 0 to 3, default: 1
-left_cam.set(cv.CAP_PROP_EXPOSURE, 250) # Exposure Time, Absolute: 1 to 5000, default: 473
-left_cam.set(cv.CAP_PROP_AUTO_EXPOSURE, 0)  # Exposure, Dynamic Framerate: 0 or 1, default: 0
-
-right_cam.set(cv.CAP_PROP_BRIGHTNESS, 0)  # Brightness: -64 to 64, default: 0
-right_cam.set(cv.CAP_PROP_CONTRAST, 32)  # Contrast: 0 to 64, default: 32
-right_cam.set(cv.CAP_PROP_SATURATION, 64)  # Saturation: 0 to 128, default: 64
-right_cam.set(cv.CAP_PROP_HUE, 0)  # Hue: -40 to 40, default: 0
-right_cam.set(cv.CAP_PROP_AUTO_WB, 1)  # White Balance, Automatic: 0 or 1, default: 1
-right_cam.set(cv.CAP_PROP_GAMMA, 100)  # Gamma: 72 to 500, default: 100
-right_cam.set(cv.CAP_PROP_GAIN, 0)  # Gain: 0 to 100, default: 0
-right_cam.set(cv.CAP_PROP_SHARPNESS, 2)  # Sharpness: 0 to 6, default: 2
-right_cam.set(cv.CAP_PROP_BACKLIGHT, 1)  # Backlight Compensation: 0 to 4, default: 1
-right_cam.set(cv.CAP_PROP_AUTO_EXPOSURE, 3)  # Auto Exposure: 0 to 3, default: 1
-right_cam.set(cv.CAP_PROP_EXPOSURE, 250)  # Exposure Time, Absolute: 1 to 5000, default: 473
-right_cam.set(cv.CAP_PROP_AUTO_EXPOSURE, 0)  # Exposure, Dynamic Framerate: 0 or 1, default: 0
+right_cam = cv.VideoCapture(1)
+   
 
 ########################################################################
 
