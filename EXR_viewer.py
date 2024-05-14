@@ -4,6 +4,7 @@ os.environ['OPENCV_IO_ENABLE_OPENEXR'] = '1'
 import numpy as np
 import open3d as o3d
 import json
+import matplotlib.pyplot as plt
 
 
 ###########################################
@@ -41,7 +42,7 @@ fs.release()
 # Import camera calibration data
 # from calib.io program via json
 #############################################
-with open('/home/jacob/Snake2TB/endo_calib/low_cost_proj/8_11_2x/low_cost_dual_Charuco.json', 'r') as file:
+with open('/media/jacob/Viper4TB/minicam_calibration/dual_cam_calib.json', 'r') as file:
     calib = json.load(file)
 
 sensor_width_mm = 8.8
@@ -84,8 +85,8 @@ print('baseline in mm:', tx)
 # Load EXR file of L&R created from blender
 ####################################################
 
-file_L = cv.imread("/home/jacob/Snake2TB/Blender_bin/Endo_scans/batching_feb_1_run1/013V9CKV_upper/depth/16_7_0007_L.exr", cv.IMREAD_ANYCOLOR | cv.IMREAD_ANYDEPTH)
-file_R = cv.imread("/home/jacob/Snake2TB/Blender_bin/Endo_scans/batching_feb_1_run1/013V9CKV_upper/depth/16_7_0007_R.exr", cv.IMREAD_ANYCOLOR | cv.IMREAD_ANYDEPTH)
+file_L = cv.imread("/home/jacob/Desktop/mantis_samples_blender/DXNHHADD_upper/distance/16_14_L.exr", cv.IMREAD_ANYCOLOR | cv.IMREAD_ANYDEPTH)
+file_R = cv.imread("/home/jacob/Desktop/mantis_samples_blender/DXNHHADD_upper/distance/16_14_R.exr", cv.IMREAD_ANYCOLOR | cv.IMREAD_ANYDEPTH)
 gray_image_L = cv.cvtColor(file_L, cv.COLOR_BGR2GRAY)
 gray_image_R = cv.cvtColor(file_R, cv.COLOR_BGR2GRAY)
 
@@ -93,44 +94,63 @@ gray_image_R = cv.cvtColor(file_R, cv.COLOR_BGR2GRAY)
 gray_depth_L = dist2depth_img(gray_image_L)
 gray_depth_R = dist2depth_img(gray_image_R)
 
-disp_L = (left_cam_f_px * abs(tx) / gray_depth_L)
+# Plot histograms
 
-depth_o3d_L = o3d.geometry.Image(gray_depth_L)
-depth_o3d_R = o3d.geometry.Image(gray_depth_R)
+
+plt.figure(figsize=(10, 5))
+
+plt.subplot(1, 2, 1)
+plt.hist(gray_depth_L.flatten(), bins=50, color='blue', alpha=0.7)
+plt.title('Histogram of gray_depth_L')
+plt.xlabel('Depth')
+plt.ylabel('Frequency')
+
+plt.subplot(1, 2, 2)
+plt.hist(gray_depth_R.flatten(), bins=50, color='red', alpha=0.7)
+plt.title('Histogram of gray_depth_R')
+plt.xlabel('Depth')
+plt.ylabel('Frequency')
+
+plt.tight_layout()
+plt.show()
+
+# disp_L = (left_cam_f_px * abs(tx) / gray_depth_L)
+
+# depth_o3d_L = o3d.geometry.Image(gray_depth_L)
+# depth_o3d_R = o3d.geometry.Image(gray_depth_R)
  
-pcd_L = o3d.geometry.PointCloud.create_from_depth_image(depth_o3d_L, o3d.camera.PinholeCameraIntrinsic(
-            640, 480, 3500, 3500, 340, 240 ))
-pcd_R = o3d.geometry.PointCloud.create_from_depth_image(depth_o3d_R, o3d.camera.PinholeCameraIntrinsic(
-            640, 480, 3500, 3500, 340, 240 ))
-o3d.visualization.draw_geometries([pcd_L])
+# pcd_L = o3d.geometry.PointCloud.create_from_depth_image(depth_o3d_L, o3d.camera.PinholeCameraIntrinsic(
+#             640, 480, 25398, 25398, 340, 240 ))
+# pcd_R = o3d.geometry.PointCloud.create_from_depth_image(depth_o3d_R, o3d.camera.PinholeCameraIntrinsic(
+#             640, 480, 25398, 25398, 340, 240 ))
+# o3d.visualization.draw_geometries([pcd_L])
 
-(min_val, max_val, min_loc, max_loc) = cv.minMaxLoc(gray_image_L)
+# (min_val, max_val, min_loc, max_loc) = cv.minMaxLoc(gray_image_L)
 
-normalized_disparity_image = cv.normalize(disp_L, None, 0 , 255, cv.NORM_MINMAX, dtype=cv.CV_8U)
-print(f"Min pixel value: {min_val} at location {min_loc}")
-print(f"Max pixel value: {max_val} at location {max_loc}")
+# normalized_disparity_image = cv.normalize(disp_L, None, 0 , 255, cv.NORM_MINMAX, dtype=cv.CV_8U)
+# print(f"Min pixel value: {min_val} at location {min_loc}")
+# print(f"Max pixel value: {max_val} at location {max_loc}")
 
-cv.imshow("normalized disparity image", normalized_disparity_image)
-cv.waitKey(5000)
-cv.destroyAllWindows()
+# cv.imshow("normalized disparity image", normalized_disparity_image)
+# cv.waitKey(5000)
+# cv.destroyAllWindows()
 
- e)
 
-# Filter out invalid points (i.e., points with infinite or NaN values)
-mask = (points_3D[:, :, 2] > 0) & np.isfinite(points_3D[:, :, 2])
-filtered_points_3D = points_3D[mask]
+# # # Filter out invalid points (i.e., points with infinite or NaN values)
+# # mask = (points_3D[:, :, 2] > 0) & np.isfinite(points_3D[:, :, 2])
+# # filtered_points_3D = points_3D[mask]
 
-# Convert to Open3D point cloud
-pcd_3D = o3d.geometry.PointCloud()
-pcd_3D.points = o3d.utility.Vector3dVector(filtered_points_3D)
+# # # Convert to Open3D point cloud
+# # pcd_3D = o3d.geometry.PointCloud()
+# # pcd_3D.points = o3d.utility.Vector3dVector(filtered_points_3D)
 
-# Optionally: Add colors to the point cloud
-# Assuming you have a corresponding RGB image, 'rgb_image':
-# valid_colors = rgb_image[mask]
-# pcd_3D.colors = o3d.utility.Vector3dVector(valid_colors / 255.0)
+# # # Optionally: Add colors to the point cloud
+# # # Assuming you have a corresponding RGB image, 'rgb_image':
+# # # valid_colors = rgb_image[mask]
+# # # pcd_3D.colors = o3d.utility.Vector3dVector(valid_colors / 255.0)
 
-# Visualize the point cloud
-o3d.visualization.draw_geometries([pcd_3D])
-# o3d.visualization.draw_geometries([pcd_3D, pcd_L])
-# # Close OpenCV window if open
-cv.destroyAllWindows()
+# # # Visualize the point cloud
+# # o3d.visualization.draw_geometries([pcd_3D])
+# # # o3d.visualization.draw_geometries([pcd_3D, pcd_L])
+# # # # Close OpenCV window if open
+# # cv.destroyAllWindows()

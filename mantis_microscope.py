@@ -48,6 +48,6 @@ if __name__ == "__main__":
     device_index_1 = 0
     device_index_2 = 1
     # Specify the folder where you want to save the images
-    save_folder_left = "/media/jacob/Viper4TB/minicam_calibration/may2_microscopeL_focalplus10x/"
-    save_folder_right = "/media/jacob/Viper4TB/minicam_calibration/may2_microscopeR_focalplus10x/"
+    save_folder_left = "/media/jacob/Viper4TB/mantis_lab_tests/may9_microscopeL_focalplus10x_0001/"
+    save_folder_right = "/media/jacob/Viper4TB/mantis_lab_tests/may9_microscopeR_focalplus10x_0001/"
     capture_video(device_index_1, device_index_2, save_folder_left, save_folder_right)
